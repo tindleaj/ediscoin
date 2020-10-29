@@ -26,7 +26,7 @@ pub async fn replace_and_broadcast_chain(
 ) {
     if is_valid_chain(&Blockchain {
         chain: new_blocks.clone(),
-    }) && new_blocks.len() > blockchain.chain.len()
+    }) && cumulative_difficulty(&new_blocks) > cumulative_difficulty(&blockchain.chain)
     {
         println!(
             "Received blockchain is valid. Replacing current blockchain with recieved blockchain"

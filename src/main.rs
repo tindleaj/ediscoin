@@ -1,6 +1,7 @@
+use ediscoin::*;
+
 use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
 use chrono::prelude::*;
-use ediscoin::*;
 use std::sync::Mutex;
 
 struct State {
@@ -15,7 +16,7 @@ async fn main() -> std::io::Result<()> {
     let port = std::env::args().nth(1).unwrap_or("8080".into());
 
     let state = web::Data::new(Mutex::new(State {
-        blockchain: Blockchain::new(Block::new(0, Utc::now(), "", &hex::encode([0; 64]))),
+        blockchain: Blockchain::new(Block::new(0, Utc::now(), "", &hex::encode([0; 64]), 0, 2)),
         peers: vec![],
     }));
 
@@ -61,7 +62,16 @@ async fn get_latest_block<'app>(data: web::Data<Mutex<State>>) -> impl Responder
 async fn mine_block(req_body: String, data: web::Data<Mutex<State>>) -> impl Responder {
     let mut state = data.lock().expect("failed to aquire lock on state");
 
-    state.blockchain.generate_next_block(&req_body);
+    let current_block = state.blockchain.get_latest_block();
+    let new_block = find_block(
+        current_block.index + 1,
+        &current_block.hash,
+        Utc::now(),
+        &req_body,
+        get_difficulty(&state.blockchain),
+    );
+
+    state.blockchain.add_block(new_block);
 
     broadcast_latest_chain(&state.blockchain, &state.peers).await;
 
