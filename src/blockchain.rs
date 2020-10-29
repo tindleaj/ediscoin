@@ -1,5 +1,4 @@
 use super::Block;
-use chrono::Utc;
 use serde::Serialize;
 
 #[derive(Debug, Serialize)]

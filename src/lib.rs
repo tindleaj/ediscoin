@@ -39,14 +39,10 @@ pub fn find_block(
 ) -> Block {
     let mut nonce = 0u32;
 
-    println!("Mining block:");
-    std::thread::sleep(std::time::Duration::from_secs(1));
-
+    println!("Mining block...");
     let start = std::time::Instant::now();
     loop {
         let hash = generate_hash(index, prev_hash, timestamp, data, nonce);
-
-        println!("{}", hash);
 
         if hash_matches_difficulty(&hash, difficulty) {
             let now = std::time::Instant::now();
@@ -115,7 +111,11 @@ pub fn get_difficulty(blockchain: &Blockchain) -> usize {
     let latest_block = blockchain.get_latest_block();
 
     if latest_block.index % DIFFICULTY_ADJUSTMENT_INTERVAL as u32 == 0 && latest_block.index != 0 {
-        get_adjusted_difficulty(&blockchain)
+        let new_difficulty = get_adjusted_difficulty(&blockchain);
+
+        println!("New difficulty is {}", new_difficulty);
+
+        new_difficulty
     } else {
         latest_block.difficulty
     }
